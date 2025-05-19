@@ -1,36 +1,30 @@
 ````markdown
 # Leakify
 
-[![PyPI version](https://badge.fury.io/py/leakify.svg)](https://badge.fury.io/py/leakify)  
-[![Build Status](https://github.com/yourusername/leakify/actions/workflows/python.yml/badge.svg)](https://github.com/yourusername/leakify/actions)  
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-
-A simple, async-powered CLI tool to bulk-download photos and videos from [leakedzone.com](https://leakedzone.com). Leakify crawls a model’s public gallery, extracts full-resolution media URLs, and uses `ffmpeg` under the hood for fast, reliable downloads.
+An async-powered CLI to bulk-download photos and videos from [leakedzone.com](https://leakedzone.com). Leakify crawls a model’s public gallery, grabs full-resolution media URLs, and uses `ffmpeg` under the hood for fast, reliable downloads.
 
 ---
 
-## 🚀 Features
+## 🚀 Key Features
 
-- **Async & concurrent** downloads with configurable batch size  
-- Auto-pagination: fetches all pages of photos and videos  
-- Thumbnail → full-resolution URL conversion  
-- HLS playlist & detail-page scraping for videos  
-- Real-time status table in your terminal (powered by `tabulate` + `colorama`)  
-- Easy install via `pip` and one-command usage  
+- **Asynchronous & concurrent** downloading with configurable batch size  
+- **Auto-pagination**: crawls all pages of photos and videos  
+- **Thumbnail → full-res** URL conversion  
+- **HLS & detail-page scraping** for videos  
+- **Real-time terminal status** (via `tabulate` + `colorama`)  
+- **One-line install** and **one-command** usage  
 
 ---
 
 ## 📦 Installation
 
-```bash
-pip install leakify
+1. Ensure you have:
+   - Python 3.7+
+   - `ffmpeg` on your `PATH`
+2. Install from PyPI:
+   ```bash
+   pip install leakify
 ````
-
-> **Requirements:**
->
-> * Python 3.7+
-> * `ffmpeg` available on your `PATH`
-> * Internet connection
 
 ---
 
@@ -40,31 +34,27 @@ pip install leakify
 leakify -u <MODEL_USERNAME> [options]
 ```
 
-### Options
-
-| Flag             | Description                            | Default |
-| :--------------- | :------------------------------------- | :------ |
-| `-u`, `--user`   | **(required)** Target model’s username |         |
-| `-p`, `--photos` | Only download photos                   | ✗       |
-| `-v`, `--videos` | Only download videos                   | ✗       |
-| `-b`, `--batch`  | Max concurrent downloads (1–100)       | 10      |
-| `-h`, `--help`   | Show help message and exit             |         |
+| Option            | Description                      | Default |
+| :---------------- | :------------------------------- | :------ |
+| `-u`, `--user`    | **(required)** Model’s username  |         |
+| `-p`, `--photos`  | Photos only                      | ✗       |
+| `-v`, `--videos`  | Videos only                      | ✗       |
+| `-b`, `--batch N` | Max concurrent downloads (1–100) | 10      |
+| `-h`, `--help`    | Show help and exit               |         |
 
 ### Examples
 
-* Download **all** media (photos + videos):
+* **All media** (photos + videos):
 
   ```bash
   leakify -u jane_doe
   ```
-
-* Download **photos only** (up to 5 at a time):
+* **Photos only**, batch of 5:
 
   ```bash
   leakify -u jane_doe --photos -b 5
   ```
-
-* Download **videos only**, with higher concurrency:
+* **Videos only**, batch of 20:
 
   ```bash
   leakify -u jane_doe --videos -b 20
@@ -72,56 +62,34 @@ leakify -u <MODEL_USERNAME> [options]
 
 ---
 
-## 📂 Output
+## 📂 Output Layout
 
-All downloaded files go into a folder named after the model:
+Downloads land in a folder named after the model:
 
 ```
 ./jane_doe/
 ├── photos/
-│   ├── img1.jpg
-│   ├── img2.jpg
+│   ├── 001.jpg
+│   ├── 002.jpg
 │   └── …
 └── videos/
-    ├── 9f2c1b7d8a3e4f5.mp4
-    ├── 4a7d6c5b8e2f1d0.mp4
+    ├── a1b2c3d4e5f6.mp4
+    ├── f6e5d4c3b2a1.mp4
     └── …
 ```
 
 ---
 
-## 🛠️ Development
+## 🛠 Development
 
-1. **Clone** the repo:
+```bash
+git clone https://github.com/andrilchakraborty/leakify.git
+cd leakify
+pip install -e .[test]
+pytest
+flake8 leakify
+```
 
-   ```bash
-   git clone https://github.com/yourusername/leakify.git
-   cd leakify
-   ```
-2. **Install** dev dependencies:
-
-   ```bash
-   pip install -e .[test]
-   ```
-3. **Run tests**:
-
-   ```bash
-   pytest
-   ```
-4. **Lint** with `flake8`:
-
-   ```bash
-   flake8 leakify
-   ```
+Feel free to open issues or PRs on the [GitHub repo](https://github.com/andrilchakraborty/leakify).
 
 ---
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/awesome-feature`)
-3. Commit your changes (`git commit -m "Add awesome feature"`)
-4. Push to your branch (`git push origin feature/awesome-feature`)
-5. Open a Pull Request
-
-Please read [CONTRIBUTING.md](.github/CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests.
