@@ -1,5 +1,5 @@
 ````markdown
-# Leakify
+# Leakify by Cassidy with some help from gpt
 
 An async-powered CLI to bulk-download photos and videos from [leakedzone.com](https://leakedzone.com). Leakify crawls a model’s public gallery, grabs full-resolution media URLs, and uses `ffmpeg` under the hood for fast, reliable downloads.
 
