@@ -7,8 +7,10 @@ import argparse
 import asyncio
 import os
 import re
+import sys
 import uuid
 import base64
+import shutil
 
 import aiohttp
 from bs4 import BeautifulSoup
@@ -18,6 +20,13 @@ from colorama import Fore, Style, init as colorama_init
 
 # Initialize colorama
 colorama_init(autoreset=True)
+
+# Ensure ffmpeg is available
+
+def ensure_ffmpeg():
+    if shutil.which('ffmpeg') is None:
+        print(f"{Fore.RED}Error: 'ffmpeg' not found in PATH. Please install ffmpeg and ensure it's on your PATH.{Style.RESET_ALL}")
+        sys.exit(1)
 
 API_BASE = "https://leakedzone.com"
 HEADERS = {
@@ -48,7 +57,7 @@ def update_table(model: str, mode: str, status: str):
 
 
 async def fetch_photo_urls(model: str):
-    """Fetch all full‐size photo URLs for a model."""
+    """Fetch all full-size photo URLs for a model."""
     thumb_re = re.compile(r"https://image-cdn\.leakedzone\.com/.+_300\.(jpg|webp)$")
     urls, page = [], 1
 
@@ -67,9 +76,7 @@ async def fetch_photo_urls(model: str):
             for item in data:
                 for v in item.values():
                     if isinstance(v, str) and thumb_re.match(v):
-                        # replace thumbnail suffix to get full‐size
                         urls.append(v.replace("_300.", "."))
-
             page += 1
 
     return list(dict.fromkeys(urls))
@@ -101,15 +108,11 @@ async def fetch_video_urls(model: str, batch: int):
                         hls_urls.append(link)
                     except Exception:
                         pass
-
-                # also collect detail‐page URLs to scrape for <video> tags
                 for v in item.values():
                     if isinstance(v, str) and v.startswith(f"/{model}/video/"):
                         page_urls.append(API_BASE + v)
-
             page += 1
 
-    # scrape each video detail page in parallel
     sem = asyncio.Semaphore(batch)
 
     async def scrape_detail(url):
@@ -131,8 +134,9 @@ async def fetch_video_urls(model: str, batch: int):
 
 
 async def download_worker(model: str, url: str, idx: int, total: int, folder: str, ext: str, headers=None):
-    """Run ffmpeg to download one media file."""
-    fname = os.path.basename(url) if ext != 'mp4' else f"{uuid.uuid4().hex}.mp4"
+    """Run ffmpeg to download one media file, with unique naming."""
+    unique = uuid.uuid4().hex
+    fname = f"leakify_{model}_{unique}.{ext}"
     update_table(model, folder, f"Downloading {idx}/{total}: {fname}")
     cmd = ["ffmpeg", "-y"]
     if headers:
@@ -140,8 +144,12 @@ async def download_worker(model: str, url: str, idx: int, total: int, folder: st
             cmd.extend(["-headers", h])
     cmd.extend(["-i", url, "-c", "copy", f"{model}/{folder}/{fname}"])
 
-    proc = await asyncio.create_subprocess_exec(*cmd, stdout=PIPE, stderr=PIPE)
-    await proc.communicate()
+    try:
+        proc = await asyncio.create_subprocess_exec(*cmd, stdout=PIPE, stderr=PIPE)
+        await proc.communicate()
+    except FileNotFoundError:
+        print(f"{Fore.RED}Error: 'ffmpeg' not found when attempting download. Aborting.{Style.RESET_ALL}")
+        sys.exit(1)
 
 
 async def download_bulk(model: str, urls: list, folder: str, ext: str, batch: int, extra_headers=None):
@@ -183,7 +191,6 @@ async def main():
 
     photo_count = video_count = 0
 
-    # Photos
     if args.photos or not args.videos:
         photos = await fetch_photo_urls(model)
         photo_count = len(photos)
@@ -193,7 +200,6 @@ async def main():
         else:
             update_table(model, "photos", "⚠️ No photos found")
 
-    # Videos
     if args.videos or not args.photos:
         vids = await fetch_video_urls(model, args.batch)
         video_count = len(vids)
@@ -213,5 +219,11 @@ async def main():
     input("Press any key to continue...")
 
 
-if __name__ == "__main__":
+def cli():
+    """Sync entry point for leakify console_script."""
+    ensure_ffmpeg()
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    cli()
