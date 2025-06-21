@@ -83,11 +83,7 @@ Downloads land in a folder named after the model:
 ## 🛠 Development
 
 ```bash
-git clone https://github.com/andrilchakraborty/leakify.git
-cd leakify
-pip install -e .[test]
-pytest
-flake8 leakify
+pip install leakify
 ```
 
 Feel free to open issues or PRs on the [GitHub repo](https://github.com/andrilchakraborty/leakify).
